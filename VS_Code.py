@@ -5,25 +5,25 @@ from torch.nn import functional as F
 # # hyperparameters
 # batch_size = 64 # how many independent sequences will we process in parallel?
 #     # was 32 but changed it when we scaled up model
-# block_size = 256 # what is the maxium context length for predictions?
+# block_size = 256 # what is the maximum context length for predictions?
 #     # was 8 but changed it when we scaled up model. So we have 256 context characters to predict the 257th term instead of just 8
 # max_iters = 5000
 # eval_interval = 500
 # learning_rate = 3e-4
-#     # was 1e-3 but changed it when we scaled up model. Lowered it because neural net is much bigger
-# device = 'cuda' if torch.cuda.is_available() else 'cpu' # adds ability to run on gpu if you have it, this makes it a lot faster
+#     # was 1e-3 but changed it when we scaled up the model. Lowered it because neural net is much bigger
+# device = 'cuda' if torch.cuda.is_available() else 'cpu' # adds ability to run on GPU if you have it, this makes it a lot faster
 # eval_iters = 200
 # n_embd = 384 # n_embd = number of embedding dimensions
 #     # was 32 but changed it when we scaled up model
 # n_head = 6 # every head is 64 dimensional
 # n_layer = 6
-# dropout = 0.2 # every foward/backward pass 20% of these intermediate calculations are disabled and dropped to 0
+# dropout = 0.2 # every forward/backward pass 20% of these intermediate calculations are disabled and dropped to 0
 # # -----------------
-# # I have a macbook so to run this without a cpu would not be a good idea lol. But if you had a GPU these numbers 
-# # would take about 15-30 minutes to run and you would get a very solid shakespeare play! But for me I have to turn 
+# # I have a Macbook so to run this without a GPU would not be a good idea lol. But if you had a GPU these numbers 
+# # would take about 15-30 minutes to run and you would get a very solid Shakespeare play! But for me, I have to turn 
 # # these numbers down unfortunently so my output won't be nearly as good, but it is great for learning!
 
-# # these worked but too ~10 minutes. I commented the output below thr dropout
+# # these worked but took ~10 minutes. I commented the output below the dropout
 # batch_size = 32 # Moderate batch size
 # block_size = 128 # Increased context length but still manageable
 # max_iters = 3000 # Reasonable number of iterations
@@ -53,7 +53,7 @@ from torch.nn import functional as F
 # Laar of and to prud I deatinung him was a stor murch
 # Datablemish greal hander: he descopt, he may.
 
-# the form is right but the results are nonsensical, but shows at more scale what is possible
+# The form is right but the results are nonsensical, but shows at more scale what is possible
 
 
 # hyperparameters that can work for me
