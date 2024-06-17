@@ -1,3 +1,4 @@
+from io import TextIOBase
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -5,25 +6,25 @@ from torch.nn import functional as F
 # # hyperparameters
 # batch_size = 64 # how many independent sequences will we process in parallel?
 #     # was 32 but changed it when we scaled up model
-# block_size = 256 # what is the maximum context length for predictions?
+# block_size = 256 # what is the maxium context length for predictions?
 #     # was 8 but changed it when we scaled up model. So we have 256 context characters to predict the 257th term instead of just 8
 # max_iters = 5000
 # eval_interval = 500
 # learning_rate = 3e-4
-#     # was 1e-3 but changed it when we scaled up the model. Lowered it because neural net is much bigger
-# device = 'cuda' if torch.cuda.is_available() else 'cpu' # adds ability to run on GPU if you have it, this makes it a lot faster
+#     # was 1e-3 but changed it when we scaled up model. Lowered it because neural net is much bigger
+# device = 'cuda' if torch.cuda.is_available() else 'cpu' # adds ability to run on gpu if you have it, this makes it a lot faster
 # eval_iters = 200
 # n_embd = 384 # n_embd = number of embedding dimensions
 #     # was 32 but changed it when we scaled up model
 # n_head = 6 # every head is 64 dimensional
 # n_layer = 6
-# dropout = 0.2 # every forward/backward pass 20% of these intermediate calculations are disabled and dropped to 0
+# dropout = 0.2 # every foward/backward pass 20% of these intermediate calculations are disabled and dropped to 0 to help overfitting
 # # -----------------
-# # I have a Macbook so to run this without a GPU would not be a good idea lol. But if you had a GPU these numbers 
-# # would take about 15-30 minutes to run and you would get a very solid Shakespeare play! But for me, I have to turn 
+# # I have a macbook so to run this without a cpu would not be a good idea lol. But if you had a GPU these numbers 
+# # would take about 15-30 minutes to run and you would get a very solid shakespeare play! But for me I have to turn 
 # # these numbers down unfortunently so my output won't be nearly as good, but it is great for learning!
 
-# # these worked but took ~10 minutes. I commented the output below the dropout
+# # these worked but too ~10 minutes. I commented the output below the dropout
 # batch_size = 32 # Moderate batch size
 # block_size = 128 # Increased context length but still manageable
 # max_iters = 3000 # Reasonable number of iterations
@@ -53,10 +54,10 @@ from torch.nn import functional as F
 # Laar of and to prud I deatinung him was a stor murch
 # Datablemish greal hander: he descopt, he may.
 
-# The form is right but the results are nonsensical, but shows at more scale what is possible
+# the form is right but the results are nonsensical, but shows at more scale what is possible
 
 
-# hyperparameters that can work for me
+# hyperparameters that can work for me to debug the code and see how well it works
 batch_size = 24 # Slightly lower batch size
 block_size = 96 # Lower context length but still usable
 max_iters = 2000 # Reduced number of iterations
@@ -84,8 +85,8 @@ chars = sorted(list(set(text)))
 vocab_size = len(chars) 
 
 # create a mapping from characters that ocur in this text
-stoi = { ch:i for i, ch in enumerate(chars) } 
-itos = { i:ch for i, ch in enumerate(chars) } 
+stoi = { ch:i for i, ch in enumerate(chars) } # string to integer
+itos = { i:ch for i, ch in enumerate(chars) } # integer to string
 encode = lambda s: [stoi[c] for c in s] # encoder: take a string, output a list of integers
 decode = lambda l: ''.join([itos[i] for i in l]) # decoder: take a list of integers, output a string
 
@@ -155,18 +156,18 @@ class Head(nn.Module):
 # multi-head attention: multiple heads of self attention in parallel
 class MultiHeadAttention(nn.Module):
 
-  def __init__(self, num_heads, head_size): # however many heads you want then what is the size of each
+  def __init__(self, num_heads, head_size): # however many heads you want (num_heads) then, what is the size of each (head_size)
     super().__init__()
     self.heads = nn.ModuleList((Head(head_size) for _ in range(num_heads)))
     # run all the heads in parallel into a list
  
-    self.proj = nn.Linear(n_embd, n_embd)
-    self.dropout = nn.Dropout(dropout)
+    self.proj = nn.Linear(n_embd, n_embd) # n_embd = number of embedding dimensions
+    self.dropout = nn.Dropout(dropout) # every foward/backward pass 20% of these intermediate calculations are disabled and dropped to 0 ot increase efficiency 
 
   def forward(self, x):
     out = torch.cat([h(x) for h in self.heads], dim =-1)
-    out = self.dropout(self.proj(out)) # projection is the linear transformation of the out come of layer torch.cat([h(x) for h in self.heads], dim =-1)
-    # projection back into the residual pathway
+    out = self.dropout(self.proj(out)) # projection is the linear transformation of the outcome of layer torch.cat([h(x) for h in self.heads], dim =-1)'s
+    # projection back into the residual pathway. See paper to understand if that os confusing.
     return out
     # concatenate all of the outputs over the channel dimension
 
@@ -179,7 +180,7 @@ class FeedForward(nn.Module):
     super().__init__() # Calls the constructor of the parent class (nn.Module) to initialize the base class. This is necessary to properly set up PyTorch modules
     self.net = nn.Sequential(     # Creates a sequential container (nn.Sequential), which allows you to define a neural network with a sequence of layers. self.net will hold this sequence.
       nn.Linear(n_embd, 4 * n_embd),  # adds a layer to the sequential container
-      nn.ReLU(), # ReLU = Rectified Linear Unit. Adds ReLU to sequential container. ReLU sets all negative values to zero and leaves positive values unchanged.
+      nn.ReLU(), # ReLU = Rectified Linear Unit. Adds ReLU to sequential container. ReLU sets all negative values to zero and leaves positive values unchanged. Introduces non-linearity to the network.
       nn.Linear(4 * n_embd, n_embd),
       nn.Dropout(dropout), # dropout can be added right before the connection back into the residual pathway 
     )
@@ -199,16 +200,17 @@ class Block(nn.Module):
     head_size = n_embd // n_head
     self.sa = MultiHeadAttention(n_head, head_size) # communication
     self.ffwd = FeedForward(n_embd) # computation
-    self.ln1 = nn.LayerNorm(n_embd)
-    self.ln2 = nn.LayerNorm(n_embd) # 2 layer norms and we tell it the embedding dimension
-      # this layering is per token transformation (happens to all 32 tokens) that
-      # normalizes the features and makes them unit mean and unit Gaussian at initialization
-      # after the model runs it might create layer norms that are not unti Gaussian, but the
-      # optimization will determine that
+    self.ln1 = nn.LayerNorm(n_embd) 
+    self.ln2 = nn.LayerNorm(n_embd) # 2 layer norms and we tell it the embedding dimension.
+      # This layering is a per token transformation (happens to all 32 tokens) that
+      # normalizes the features and makes them unit mean and unit Gaussian at initialization.
+      # After the model runs it might create layer norms that are not unit Gaussian, but the
+      # optimization will determine that.
 
+      # LayerNorm is used for normalization before the self-attention and feedforward layers,
   
   def forward(self,x):
-    x = x + self.sa(self.ln1(x)) # fork off main path to do computation, then come back to x
+    x = x + self.sa(self.ln1(x)) # fork off main path to do communication, then come back to x
     x = x + self.ffwd(self.ln2(x)) # computation... fork off like line above
     # we are applying layer norm before the transformation, called prenorm formulation
     return x
@@ -219,12 +221,15 @@ class BigramLanguageModel(nn.Module):
 
   def __init__(self):
     super().__init__()
-   # each token directly reads off the logits for the next token form a loopup table
-    self.token_embedding_table = nn.Embedding(vocab_size, n_embd) # embedding table with 32 dimensional embeddings
-    self.position_embedding_table = nn.Embedding(block_size, n_embd) # each position will get its own embedding vector
-    self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
-    self.ln_f = nn.LayerNorm(n_embd) # final layer norm
-    self.lm_head = nn.Linear(n_embd, vocab_size)
+   # each token directly reads off the logits for the next token form a lookup table
+    self.token_embedding_table = nn.Embedding(vocab_size, n_embd) # embedding table with 32 dimensional embeddings. Maps tokens to dense embeddings
+    self.position_embedding_table = nn.Embedding(block_size, n_embd) # each position will get its own embedding vector. Provides positional information for each token in the input sequence.
+    self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)]) # contain multiple instances of the Block class
+    self.ln_f = nn.LayerNorm(n_embd) # normalizes the output of the final block
+    
+    self.lm_head = nn.Linear(n_embd, vocab_size) 
+        # This line creates a linear layer that maps the final output of the model (after the blocks and normalization) to the size of the vocabulary (vocab_size). 
+        # This layer is responsible for producing the logits (scores) for each token in the vocabulary, which are then used to predict the next token.
 
 
   def forward(self, idx, targets = None): 
