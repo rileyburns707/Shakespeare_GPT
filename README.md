@@ -19,4 +19,7 @@ The next step would be fine-tuning, which could look like getting a GPT in a que
 
 - The input.txt file is the "Tiny Shakespeare" dataset as mentioned above. It is a simple text file of all the Shakespeare plays.
 
-- The VS_Code_no_notes.py and the building_GPT_no_notes.py files are the exact same as the VS_Code.py and building_GPT.ipynb files with the only difference being the comments and notes. I wanted to have a place where the code was cleaned up and not as jumbled with comments everywhere, but the actual code was left untouched. 
+- The VS_Code_no_notes.py and the building_GPT_no_notes.py files are the exact same as the VS_Code.py and building_GPT.ipynb files with the only difference being the comments and notes. I wanted to have a place where the code was cleaned up and not as jumbled with comments everywhere, but the actual code was left untouched.
+
+# My Thoughts on this Project
+I have documented all my thoughts about what I have learned, what I struggled with, and my general ideas about the project on my LinkedIn profile here www.linkedin.com/in/riley-s-burns. I actively post and check LinkedIn so feel free to message me there about any questions you might have for me!
